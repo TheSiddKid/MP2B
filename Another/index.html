@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard | AI Deepfake Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: var(--dark);
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .aurora {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(99, 102, 241, 0.15) 0%, 
+                rgba(139, 92, 246, 0.15) 20%, 
+                rgba(236, 72, 153, 0.15) 40%, 
+                rgba(251, 146, 60, 0.15) 60%, 
+                rgba(16, 185, 129, 0.15) 80%);
+            background-size: 300% 300%;
+            animation: aurora 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin: 2rem auto;
+            padding: 2.5rem;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #cbd5e1;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+
+        .tab-btn {
+            background: rgba(30, 41, 59, 0.7);
+            color: #94a3b8;
+            border: none;
+            padding: 0.8rem 1.8rem;
+            font-size: 1rem;
+            font-weight: 500;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: rgba(99, 102, 241, 0.1);
+            color: #e2e8f0;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-area {
+            margin: 1.5rem 0;
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            border-radius: 15px;
+            padding: 2.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+        }
+
+        .upload-area.drag-over {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--accent);
+        }
+
+        .upload-label {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .upload-text {
+            font-weight: 500;
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover .upload-icon {
+            color: var(--accent);
+            transform: scale(1.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 1.5rem;
+            max-width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-media {
+            max-width: 100%;
+            max-height: 350px;
+            border-radius: 12px;
+            display: block;
+            margin: 0 auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .analyze-button {
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .analyze-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(99, 102, 241, 0.4);
+            background: linear-gradient(45deg, var(--secondary), var(--primary));
+        }
+
+        .analyze-button:disabled {
+            background: #475569;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .button-icon {
+            transition: transform 0.3s ease;
+        }
+
+        .analyze-button:hover:not(:disabled) .button-icon {
+            transform: rotate(10deg);
+        }
+
+        .result-area {
+            margin-top: 2rem;
+            padding: 1.8rem;
+            background: rgba(30, 41, 59, 0.7);
+            border-radius: 15px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            text-align: left;
+        }
+
+        .result-area h2 {
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .result-content {
+            padding: 1.2rem;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #prediction {
+            font-size: 1.2rem;
+            color: #e2e8f0;
+            margin: 0;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .confidence-meter {
+            width: 100%;
+            height: 12px;
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 10px;
+            margin-top: 1rem;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .confidence-level {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+            transition: width 0.8s ease;
+        }
+
+        .confidence-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        footer {
+            margin-top: 3rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .progress-container {
+            display: none;
+            width: 100%;
+            background: rgba(71, 85, 105, 0.5);
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="aurora"></div>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <h1>DeepGuard AI</h1>
+            <p class="subtitle">Advanced Deepfake Detection System</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="image-tab">
+                <i class="fas fa-image"></i> Image Analysis
+            </button>
+            <button class="tab-btn" data-tab="video-tab">
+                <i class="fas fa-video"></i> Video Analysis
+            </button>
+        </div>
+
+        <!-- Image Analysis Tab -->
+        <div id="image-tab" class="tab-content active">
+            <div class="upload-area" id="image-upload-area">
+                <input type="file" id="imageUpload" class="file-input" accept="image/png, image/jpeg, image/jpg">
+                <label for="imageUpload" class="upload-label">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Click or drag to upload an image</div>
+                    <div class="file-type">Supports: JPG, PNG</div>
+                </label>
+            </div>
+            <div id="imagePreview" class="preview-container"></div>
+            <button id="analyzeButton" class="analyze-button" disabled>
+                <span class="button-text">Analyze Image</span>
+                <span class="button-icon"><i class="fas fa-search"></i></span>
+            </button>
+        </div>
+
+        <!-- Video Analysis Tab -->
+        <div id="video-tab" class="tab-content">
+            <div class="upload-area" id="video-upload-area">
+                <input type="file" id="videoUpload" class="file-input" accept="video/mp4, video/avi, video/mov">
+                <label for="videoUpload" class="upload-label">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Click or drag to upload a video</div>
+                    <div class="file-type">Supports: MP4, AVI, MOV</div>
+                </label>
+            </div>
+            <div id="videoPreview" class="preview-container"></div>
+            <button id="analyzeVideoButton" class="analyze-button" disabled>
+                <span class="button-text">Analyze Video</span>
+                <span class="button-icon"><i class="fas fa-search"></i></span>
+            </button>
+        </div>
+
+        <!-- Progress Bar -->
+        <div id="progressContainer" class="progress-container">
+            <div id="progressBar" class="progress-bar"></div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="result" class="result-area">
+            <h2><i class="fas fa-chart-bar"></i> Analysis Result</h2>
+            <div class="result-content">
+                <p id="prediction">The result will appear here after analysis.</p>
+            </div>
+            <div class="confidence-meter">
+                <div id="confidenceLevel" class="confidence-level" style="width: 0%"></div>
+            </div>
+            <div class="confidence-labels">
+                <span>0%</span>
+                <span>50%</span>
+                <span>100%</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>DeepGuard AI | Project by: Hussain, Junaid, and Zaid</p>
+            <p>Advanced Deepfake Detection System | Semester V Mini Project</p>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM elements
+            const imageUpload = document.getElementById('imageUpload');
+            const videoUpload = document.getElementById('videoUpload');
+            const imagePreview = document.getElementById('imagePreview');
+            const videoPreview = document.getElementById('videoPreview');
+            const analyzeButton = document.getElementById('analyzeButton');
+            const analyzeVideoButton = document.getElementById('analyzeVideoButton');
+            const predictionResult = document.getElementById('prediction');
+            const confidenceLevel = document.getElementById('confidenceLevel');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressBar = document.getElementById('progressBar');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const imageUploadArea = document.getElementById('image-upload-area');
+            const videoUploadArea = document.getElementById('video-upload-area');
+
+            // State variables
+            let selectedImage = null;
+            let selectedVideo = null;
+            const API_URL = 'http://localhost:5000'; // Flask backend URL
+
+            // Tab switching functionality
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all tabs
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+
+            // Drag and drop functionality
+            function setupDragDrop(area, input) {
+                area.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    area.classList.add('drag-over');
+                });
+
+                area.addEventListener('dragleave', () => {
+                    area.classList.remove('drag-over');
+                });
+
+                area.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    area.classList.remove('drag-over');
+                    
+                    if (e.dataTransfer.files.length) {
+                        input.files = e.dataTransfer.files;
+                        const event = new Event('change');
+                        input.dispatchEvent(event);
+                    }
+                });
+            }
+
+            // Setup drag and drop for both areas
+            setupDragDrop(imageUploadArea, imageUpload);
+            setupDragDrop(videoUploadArea, videoUpload);
+
+            // Image upload handler
+            imageUpload.addEventListener('change', (event) => {
+                selectedImage = event.target.files[0];
+                if (selectedImage) {
+                    imagePreview.innerHTML = '';
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.classList.add('preview-media', 'animate__animated', 'animate__fadeIn');
+                        imagePreview.appendChild(img);
+                    };
+                    reader.readAsDataURL(selectedImage);
+                    analyzeButton.disabled = false;
+                }
+            });
+
+            // Video upload handler
+            videoUpload.addEventListener('change', (event) => {
+                selectedVideo = event.target.files[0];
+                if (selectedVideo) {
+                    videoPreview.innerHTML = '';
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(selectedVideo);
+                    video.controls = true;
+                    video.classList.add('preview-media', 'animate__animated', 'animate__fadeIn');
+                    videoPreview.appendChild(video);
+                    analyzeVideoButton.disabled = false;
+                }
+            });
+
+            // Analyze image
+            analyzeButton.addEventListener('click', async () => {
+                if (!selectedImage) return;
+                
+                // Reset UI
+                predictionResult.textContent = 'Analyzing image...';
+                confidenceLevel.style.width = '0%';
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '30%';
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', selectedImage);
+                    
+                    // Simulate progress
+                    const progressInterval = setInterval(() => {
+                        const width = parseInt(progressBar.style.width) || 0;
+                        if (width < 80) {
+                            progressBar.style.width = (width + 10) + '%';
+                        }
+                    }, 300);
+                    
+                    // Send to backend
+                    const response = await axios.post(`${API_URL}/analyze-image`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                    
+                    // Display results
+                    setTimeout(() => {
+                        const { prediction, confidence, is_deepfake } = response.data;
+                        const confidencePercent = Math.round(confidence * 100);
+                        
+                        predictionResult.innerHTML = is_deepfake 
+                            ? `⚠️ <strong>Deepfake Detected!</strong> (Confidence: ${confidencePercent}%)`
+                            : `✅ <strong>Authentic Content</strong> (Confidence: ${confidencePercent}%)`;
+                        
+                        confidenceLevel.style.width = `${confidencePercent}%`;
+                        progressContainer.style.display = 'none';
+                        
+                        // Add result animation
+                        predictionResult.classList.add('animate__animated', 'animate__rubberBand');
+                        setTimeout(() => {
+                            predictionResult.classList.remove('animate__rubberBand');
+                        }, 1000);
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Error analyzing image:', error);
+                    predictionResult.textContent = 'Error analyzing image. Please try again.';
+                    progressContainer.style.display = 'none';
+                }
+            });
+
+            // Analyze video
+            analyzeVideoButton.addEventListener('click', async () => {
+                if (!selectedVideo) return;
+                
+                // Reset UI
+                predictionResult.textContent = 'Analyzing video frames...';
+                confidenceLevel.style.width = '0%';
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '10%';
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('file', selectedVideo);
+                    
+                    // Simulate progress
+                    const progressInterval = setInterval(() => {
+                        const width = parseInt(progressBar.style.width) || 0;
+                        if (width < 90) {
+                            progressBar.style.width = (width + 5) + '%';
+                        }
+                    }, 500);
+                    
+                    // Send to backend
+                    const response = await axios.post(`${API_URL}/analyze-video`, formData, {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    });
+                    
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+                    
+                    // Display results
+                    setTimeout(() => {
+                        const { prediction, confidence, is_deepfake } = response.data;
+                        const confidencePercent = Math.round(confidence * 100);
+                        
+                        predictionResult.innerHTML = is_deepfake 
+                            ? `⚠️ <strong>Deepfake Video Detected!</strong> (Confidence: ${confidencePercent}%)`
+                            : `✅ <strong>Authentic Video</strong> (Confidence: ${confidencePercent}%)`;
+                        
+                        confidenceLevel.style.width = `${confidencePercent}%`;
+                        progressContainer.style.display = 'none';
+                        
+                        // Add result animation
+                        predictionResult.classList.add('animate__animated', 'animate__rubberBand');
+                        setTimeout(() => {
+                            predictionResult.classList.remove('animate__rubberBand');
+                        }, 1000);
+                    }, 500);
+                    
+                } catch (error) {
+                    console.error('Error analyzing video:', error);
+                    predictionResult.textContent = 'Error analyzing video. Please try again.';
+                    progressContainer.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

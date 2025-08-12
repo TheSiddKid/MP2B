@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Spotter</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <div class="aurora"></div>
+    <div class="container">
+        <header>
+            <h1 class="animate__animated animate__fadeInDown">Deepfake Spotter</h1>
+            <p class="animate__animated animate__fadeIn animate__delay-1s">Upload an image or video to check if it's a deepfake</p>
+        </header>
+
+        <main>
+            <!-- IMAGE UPLOAD SECTION -->
+            <div class="upload-section animate__animated animate__fadeIn animate__delay-1s">
+                <div class="upload-area">
+                    <input type="file" id="imageUpload" accept="image/png, image/jpeg">
+                    <label for="imageUpload" class="upload-label">
+                        <span class="upload-icon">📷</span>
+                        <span class="upload-text">Click to Select an Image</span>
+                    </label>
+                </div>
+                <div id="imagePreview" class="image-preview"></div>
+                <button id="analyzeButton" class="analyze-button" disabled>
+                    <span class="button-text">Analyze Image</span>
+                    <span class="button-icon">🔍</span>
+                </button>
+            </div>
+
+            <!-- VIDEO UPLOAD SECTION -->
+            <div class="upload-section animate__animated animate__fadeIn animate__delay-1s">
+                <div class="upload-area">
+                    <input type="file" id="videoUpload" accept="video/mp4, video/avi">
+                    <label for="videoUpload" class="upload-label">
+                        <span class="upload-icon">🎥</span>
+                        <span class="upload-text">Click to Select a Video</span>
+                    </label>
+                </div>
+                <div id="videoPreview" class="image-preview"></div>
+                <button id="analyzeVideoButton" class="analyze-button" disabled>
+                    <span class="button-text">Analyze Video</span>
+                    <span class="button-icon">🔍</span>
+                </button>
+            </div>
+
+            <!-- RESULT -->
+            <div id="result" class="result-area animate__animated animate__fadeIn animate__delay-1s">
+                <h2>Result</h2>
+                <div class="result-content">
+                    <p id="prediction">The result will be displayed here.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="animate__animated animate__fadeIn animate__delay-2s">
+            <p>Project by: Hussain, Junaid, and Zaid</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
